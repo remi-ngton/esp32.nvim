@@ -36,15 +36,7 @@ return {
     dependencies = { "folke/snacks.nvim" },
     opts = {
       build_dir = "build.clang", -- default (can be customized)
-      baudrate = 115200,         -- reserved for future use
     },
-    config = function(_, opts)
-      local esp32 = require("esp32")
-      esp32.setup(opts)
-
-      -- Automatically configure clangd LSP
-      require("lspconfig").clangd.setup(esp32.lsp_config())
-    end,
     keys = {
       { "<leader>RM", function() require("esp32").create_picker("monitor") end, desc = "ESP32: Pick & Monitor" },
       { "<leader>Rm", function() require("esp32").open_terminal("monitor") end, desc = "ESP32: Monitor" },
