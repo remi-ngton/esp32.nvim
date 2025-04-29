@@ -190,6 +190,21 @@ function M.info()
 		table.insert(messages, "✗ compile_commands.json missing")
 	end
 
+	-- Check ESP-IDF environment
+	local function check_bin(bin)
+		return vim.fn.executable(bin) == 1 and "✓" or "✗"
+	end
+
+	table.insert(messages, "")
+	table.insert(messages, "ESP-IDF Environment:")
+	table.insert(messages, "  IDF_PATH: " .. (vim.env.IDF_PATH or "✗ not set"))
+	table.insert(messages, "  idf.py: " .. check_bin("idf.py"))
+	table.insert(messages, "  llvm-ar: " .. check_bin("llvm-ar"))
+
+	if vim.env.IDF_PATH == nil then
+		table.insert(messages, "⚠️ You may need to run: source ~/esp/esp-idf/export.sh")
+	end
+
 	vim.notify(table.concat(messages, "\n"), vim.log.levels.INFO)
 end
 
