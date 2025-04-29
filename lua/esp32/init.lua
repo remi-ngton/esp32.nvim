@@ -1,0 +1,173 @@
+local M = {}
+
+local Snacks = require("snacks")
+
+---@class ESP32Opts
+local defaults = {
+	build_dir = "build.clang",
+	baudrate = 115200,
+}
+
+M.options = vim.deepcopy(defaults)
+
+function M.setup(opts)
+	M.options = vim.tbl_deep_extend("force", M.options or {}, opts or {})
+	M.ensure_clangd()
+end
+
+--- List available cu.* serial ports
+function M.list_ports()
+	local scandir = vim.uv.fs_scandir("/dev")
+	local ports = {}
+
+	if scandir then
+		while true do
+			local name = vim.uv.fs_scandir_next(scandir)
+			if not name then
+				break
+			end
+			if name:match("^cu%.") then
+				table.insert(ports, { port = "/dev/" .. name })
+			end
+		end
+	end
+
+	return ports
+end
+
+--- Find the ESP-IDF specific clangd
+function M.find_esp_clangd()
+	local home = vim.env.HOME or vim.fn.expand("~")
+	local base = home .. "/.espressif/tools/esp-clang"
+	local scandir = vim.uv.fs_scandir(base)
+	if not scandir then
+		return nil
+	end
+
+	local latest
+	while true do
+		local name = vim.uv.fs_scandir_next(scandir)
+		if not name then
+			break
+		end
+		if name:match("^esp%-.+") then
+			latest = base .. "/" .. name .. "/esp-clang/bin/clangd"
+		end
+	end
+
+	return latest
+end
+
+--- Ensure compile_commands.json exists
+function M.ensure_compile_commands()
+	local path = M.options.build_dir .. "/compile_commands.json"
+	if vim.fn.filereadable(path) == 0 then
+		vim.notify("[ESP32] ⚠️ Missing compile_commands.json in " .. path, vim.log.levels.WARN)
+	end
+end
+
+--- Ensure esp-clangd exists and warn if not
+function M.ensure_clangd()
+	if not M.find_esp_clangd() then
+		vim.notify("[ESP32] ⚠️ ESP-specific clangd not found. LSP may not work properly.", vim.log.levels.WARN)
+	end
+end
+
+--- Open a Snacks terminal for idf.py command
+function M.open_terminal(cmd, port)
+	local opts = M.options
+	local full_cmd = "idf.py -B " .. opts.build_dir
+	if port then
+		full_cmd = full_cmd .. " -p " .. port
+	end
+	full_cmd = full_cmd .. " " .. cmd
+
+	Snacks.terminal.open(full_cmd, {
+		win = {
+			width = 0.6,
+			height = 0.7,
+			border = "single",
+			title = "Ctrl + ] to stop",
+			title_pos = "center",
+		},
+	})
+end
+
+--- Create Snacks picker for port and run idf.py command
+function M.create_picker(cmd)
+	Snacks.picker.pick({
+		prompt = "Select ESP32 port",
+		ui_select = true,
+		focus = "list",
+		finder = M.list_ports,
+		layout = {
+			layout = {
+				box = "horizontal",
+				width = 0.2,
+				height = 0.2,
+				{
+					box = "vertical",
+					border = "single",
+					title = "USB Serial Ports",
+					{ win = "input", height = 1, border = "bottom" },
+					{ win = "list", border = "none" },
+				},
+			},
+		},
+		format = function(item)
+			local a = Snacks.picker.util.align
+			return { { a(item.port, 20, { align = "left" }) } }
+		end,
+		confirm = function(picker, item)
+			picker:close()
+			M.open_terminal(cmd, item.port)
+		end,
+	})
+end
+
+--- Run idf.py reconfigure for build.clang
+function M.reconfigure()
+	local build_dir = M.options.build_dir
+	Snacks.terminal.open("idf.py -B " .. build_dir .. " -D IDF_TOOLCHAIN=clang reconfigure", {
+		win = {
+			width = 0.5,
+			height = 0.4,
+			title = "ESP-IDF Reconfigure",
+			title_pos = "center",
+		},
+	})
+end
+
+--- Show ESP32 setup info
+function M.info()
+	local messages = {}
+
+	-- clangd check
+	if M.find_esp_clangd() then
+		table.insert(messages, "✓ Found esp-clangd")
+	else
+		table.insert(messages, "✗ ESP-specific clangd missing")
+	end
+
+	-- compile_commands.json check
+	local build_dir = M.options.build_dir
+	local path = build_dir .. "/compile_commands.json"
+	if vim.fn.filereadable(path) == 1 then
+		table.insert(messages, "✓ compile_commands.json exists")
+	else
+		table.insert(messages, "✗ compile_commands.json missing")
+	end
+
+	vim.notify(table.concat(messages, "\n"), vim.log.levels.INFO)
+end
+
+-- Setup custom commands for Neovim
+vim.api.nvim_create_user_command("ESPReconfigure", function()
+	M.reconfigure()
+end, {})
+
+vim.api.nvim_create_user_command("ESPInfo", function()
+	M.info()
+end, {})
+
+return M
