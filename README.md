@@ -14,14 +14,15 @@ Uses [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal and picker
 - 🔎 Pick available USB serial ports dynamically
 - 📋 Check project setup with `:ESPInfo`
 - 🛠 Quickly run reconfigure with `:ESPReconfigure`
+- ⚙️ Automatically configures `clangd` for LazyVim LSP
 
 ---
 
 ## 🚀 Requirements
 
 - [ESP-IDF](https://github.com/espressif/esp-idf) installed and initialized
-- `idf_tools.py install esp-clang`
-- `idf.py -B build.clang -D IDF_TOOLCHAIN=clang reconfigure`
+- ESP-specific `clangd` is installed via `idf_tools.py install esp-clang`
+- ESP-specific `clangd` is configured via `idf.py -B build.clang -D IDF_TOOLCHAIN=clang reconfigure` (can be done via command `:ESPReconfigure`)
 - [snacks.nvim](https://github.com/folke/snacks.nvim) (automatically installed via LazyVim dependencies)
 
 ---
@@ -29,20 +30,39 @@ Uses [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal and picker
 ## 📦 Installation (with Lazy.nvim)
 
 ```lua
-{
-  "Aietes/esp32.nvim",
-  dependencies = { "folke/snacks.nvim" },
-  opts = {
-    build_dir = "build.clang", -- default (can be customized)
-    baudrate = 115200,         -- reserved for future use
+return {
+  {
+    "Aietes/esp32.nvim",
+    dependencies = { "folke/snacks.nvim" },
+    opts = {
+      build_dir = "build.clang", -- default (can be customized)
+      baudrate = 115200,         -- reserved for future use
+    },
+    config = function(_, opts)
+      local esp32 = require("esp32")
+      esp32.setup(opts)
+
+      -- Automatically configure clangd LSP
+      require("lspconfig").clangd.setup(esp32.lsp_config())
+    end,
+    keys = {
+      { "<leader>RM", function() require("esp32").create_picker("monitor") end, desc = "ESP32: Pick & Monitor" },
+      { "<leader>Rm", function() require("esp32").open_terminal("monitor") end, desc = "ESP32: Monitor" },
+      { "<leader>RF", function() require("esp32").create_picker("flash") end, desc = "ESP32: Pick & Flash" },
+      { "<leader>Rf", function() require("esp32").open_terminal("flash") end, desc = "ESP32: Flash" },
+      { "<leader>Rr", ":ESPReconfigure<CR>", desc = "ESP32: Reconfigure project" },
+      { "<leader>Ri", ":ESPInfo<CR>", desc = "ESP32: Project Info" },
+    },
   },
-  keys = {
-    { "<leader>RM", function() require("esp32").create_picker("monitor") end, desc = "ESP32: Pick & Monitor" },
-    { "<leader>Rm", function() require("esp32").open_terminal("monitor") end, desc = "ESP32: Monitor" },
-    { "<leader>RF", function() require("esp32").create_picker("flash") end, desc = "ESP32: Pick & Flash" },
-    { "<leader>Rf", function() require("esp32").open_terminal("flash") end, desc = "ESP32: Flash" },
-    { "<leader>Rr", ":ESPReconfigure<CR>", desc = "ESP32: Reconfigure project" },
-    { "<leader>Ri", ":ESPInfo<CR>", desc = "ESP32: Project Info" },
+  -- also ensure lsp_config is using the esp-specific clangd
+  {
+    "neovim/nvim-lspconfig",
+    opts = function(_, opts)
+      local esp32 = require("esp32")
+      opts.servers = opts.servers or {}
+      opts.servers.clangd = esp32.lsp_config()
+      return opts
+    end,
   },
 }
 ```
@@ -54,7 +74,6 @@ Uses [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal and picker
 ```lua
 opts = {
   build_dir = "build.clang", -- directory for CMake builds (must match your clangd compile_commands.json)
-  baudrate = 115200,         -- (reserved for future use)
 }
 ```
 
@@ -116,4 +135,4 @@ idf.py -B build.clang flash
 
 ## 📜 License
 
-MIT License © 2024 [Aietes]
+MIT License © 2024 Aietes
