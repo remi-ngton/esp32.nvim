@@ -128,11 +128,53 @@ idf.py -B build.clang flash
 ## 📋 Notes
 
 - This plugin does **not** install ESP-IDF automatically.
-- You should ensure your environment (`$PATH`, etc.) is correctly initialized.
-- [direnv](https://direnv.net/) or a `flake.nix` is recommended for auto-loading ESP-IDF environments.
+- You must either:
+  - Use a Nix flake (recommended, see below)
+  - Or manually source `~/esp/esp-idf/export.sh` before launching Neovim
+- [direnv](https://direnv.net/) or a `flake.nix` is recommended for auto-loading ESP-IDF environments
+
+---
+
+## ❄️ Nix Flake Setup (Recommended)
+
+Using [nix](https://github.com/DeterminateSystems/nix-installer) is highly recommended. Use this `flake.nix` to create a reproducible ESP32 development environment:
+
+```nix
+{
+  description = "Development ESP32 C3 with ESP-IDF";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [ cmake ninja dfu-util python3 ccache ];
+          shellHook = ''
+            . $HOME/esp/esp-idf/export.sh
+          '';
+        };
+      });
+}
+```
+
+Then use [direnv](https://direnv.net/) with a `.envrc`:
+
+```bash
+touch .envrc
+echo 'use flake' > .envrc
+direnv allow
+```
+
+This will automatically load the environment when you enter the directory.
+✅ Now Neovim and the plugin will inherit the full ESP-IDF toolchain environment.
 
 ---
 
 ## 📜 License
 
-MIT License © 2024 Aietes
+MIT License © 2024 [Aietes](https://github.com/Aietes)
