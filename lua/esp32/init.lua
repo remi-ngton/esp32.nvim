@@ -195,11 +195,9 @@ function M.info()
 		return vim.fn.executable(bin) == 1 and "✓" or "✗"
 	end
 
-	table.insert(messages, "")
-	table.insert(messages, "ESP-IDF Environment:")
-	table.insert(messages, "  IDF_PATH: " .. (vim.env.IDF_PATH or "✗ not set"))
-	table.insert(messages, "  idf.py: " .. check_bin("idf.py"))
-	table.insert(messages, "  llvm-ar: " .. check_bin("llvm-ar"))
+	table.insert(messages, check_bin("idf.py") .. " idf.py")
+	table.insert(messages, check_bin("llvm-ar") .. " llvm-ar")
+	table.insert(messages, "IDF_PATH: " .. (vim.env.IDF_PATH or "✗ not set"))
 
 	if vim.env.IDF_PATH == nil then
 		table.insert(messages, "⚠️ You may need to run: source ~/esp/esp-idf/export.sh")
