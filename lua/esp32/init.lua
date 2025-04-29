@@ -138,6 +138,38 @@ function M.reconfigure()
 	})
 end
 
+--- Set up ESP32 LSP configuration
+function M.lsp_config()
+	local clangd = M.find_esp_clangd()
+	if not clangd then
+		vim.notify("[ESP32] No esp-clangd found. Falling back to system clangd.", vim.log.levels.WARN)
+		clangd = "clangd"
+	end
+	return {
+		cmd = {
+			clangd,
+			"--compile-commands-dir=" .. M.options.build_dir,
+			"--background-index",
+			"--clang-tidy",
+			"--header-insertion=iwyu",
+			"--completion-style=detailed",
+			"--function-arg-placeholders",
+			"--fallback-style=llvm",
+		},
+		root_dir = function(fname)
+			return require("lspconfig.util").root_pattern("sdkconfig")(fname) or vim.fn.getcwd()
+		end,
+		capabilities = {
+			offsetEncoding = { "utf-16" },
+		},
+		init_options = {
+			usePlaceholders = true,
+			completeUnimported = true,
+			clangdFileStatus = true,
+		},
+	}
+end
+
 --- Show ESP32 setup info
 function M.info()
 	local messages = {}
