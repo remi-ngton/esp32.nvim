@@ -37,30 +37,104 @@ Install via Lazy.nvim or any other plugin manager. Via Lazy.nvim, add the follow
 }
 ```
 
-Below is the default configuration. If you are using Lazy.nvim, add a `esp32.lua` file to your `~/.config/nvim/lua/plugins/` directory. Below is a sample configuration, you can customize it as needed. The mappings are set to `<leader>R` by default, but you can change them to your liking.
+To customize, simply set the `opts` as usual:
 
-> ⚠️ **Attention:** It's critical to ensure `nvim-lspconfig` is configured to use the ESP-specific `clangd`. This is done automatically in the example below by setting `opts` for `nvim-lspconfig`. If you are using a different LSP setup, make sure to adjust accordingly.
+```lua
+{
+  "Aietes/esp32.nvim",
+  opts = {
+    -- custom build dir
+    build_dir = "build.custom",
+  },
+  keys = {
+  {
+      -- some other keymap
+   "<leader>em",
+   function()
+    require("esp32").pick("monitor")
+   end,
+   desc = "ESP32: Pick & Monitor",
+  },
+  }
+}
+```
+
+Below is the default configuration:
 
 ```lua
 return {
+ "Aietes/esp32.nvim",
+ name = "esp32.nvim",
+ dependencies = {
+  "folke/snacks.nvim",
   {
-    "Aietes/esp32.nvim",
-    dependencies = { "folke/snacks.nvim" },
-    opts = {
-      build_dir = "build.clang", -- default (can be customized)
-    },
-    keys = {
-      { "<leader>RM", function() require("esp32").pick("monitor") end, desc = "ESP32: Pick & Monitor" },
-      { "<leader>Rm", function() require("esp32").command("monitor") end, desc = "ESP32: Monitor" },
-      { "<leader>RF", function() require("esp32").pick("flash") end, desc = "ESP32: Pick & Flash" },
-      { "<leader>Rf", function() require("esp32").command("flash") end, desc = "ESP32: Flash" },
-      { "<leader>Rc", function() require("esp32").command("menuconfig") end, desc = "ESP32: Configure" },
-      { "<leader>RC", function() require("esp32").command("clean") end, desc = "ESP32: Clean" },
-      { "<leader>Rr", ":ESPReconfigure<CR>", desc = "ESP32: Reconfigure project" },
-      { "<leader>Ri", ":ESPInfo<CR>", desc = "ESP32: Project Info" },
-    },
+   "neovim/nvim-lspconfig",
+   opts = function(_, opts)
+    local esp32 = require("esp32")
+    opts.servers = opts.servers or {}
+    opts.servers.clangd = esp32.lsp_config()
+    return opts
+   end,
   },
-  -- also ensure lsp_config is using the esp-specific clangd
+ },
+ opts = {
+  build_dir = "build.clang",
+ },
+ config = function(_, opts)
+  require("esp32").setup(opts)
+ end,
+ keys = {
+  {
+   "<leader>RM",
+   function()
+    require("esp32").pick("monitor")
+   end,
+   desc = "ESP32: Pick & Monitor",
+  },
+  {
+   "<leader>Rm",
+   function()
+    require("esp32").command("monitor")
+   end,
+   desc = "ESP32: Monitor",
+  },
+  {
+   "<leader>RF",
+   function()
+    require("esp32").pick("flash")
+   end,
+   desc = "ESP32: Pick & Flash",
+  },
+  {
+   "<leader>Rf",
+   function()
+    require("esp32").command("flash")
+   end,
+   desc = "ESP32: Flash",
+  },
+  {
+   "<leader>Rc",
+   function()
+    require("esp32").command("menuconfig")
+   end,
+   desc = "ESP32: Configure",
+  },
+  {
+   "<leader>RC",
+   function()
+    require("esp32").command("clean")
+   end,
+   desc = "ESP32: Clean",
+  },
+  { "<leader>Rr", ":ESPReconfigure<CR>", desc = "ESP32: Reconfigure project" },
+  { "<leader>Ri", ":ESPInfo<CR>", desc = "ESP32: Project Info" },
+ },
+}
+```
+
+> ⚠️ **Attention:** It's critical to ensure `nvim-lspconfig` is configured to use the ESP-specific `clangd`. This is done in the example below by setting `opts` for `nvim-lspconfig`. The default configuration already does this, but if you are using a different LSP setup, make sure to adjust accordingly.
+
+```lua
   {
     "neovim/nvim-lspconfig",
     opts = function(_, opts)
@@ -70,7 +144,6 @@ return {
       return opts
     end,
   },
-}
 ```
 
 ---
