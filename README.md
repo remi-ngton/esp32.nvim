@@ -29,7 +29,7 @@ Uses [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal and picker
 
 ## 📦 Installation (with Lazy.nvim)
 
-Install via Lazy.nvim or any other plugin manager. Via Lazy.nvim, add the following to your `~/.config/nvim/lua/plugins/init.lua` file:
+Install via Lazy.nvim or any other plugin manager. Via Lazy.nvim:
 
 ```lua
 {
