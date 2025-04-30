@@ -29,6 +29,10 @@ Uses [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal and picker
 
 ## 📦 Installation (with Lazy.nvim)
 
+If you are using Lazy.nvim, add a `esp32.lua` file to your `~/.config/nvim/lua/plugins/` directory. Below is a sample configuration, you can customize it as needed. The mappings are set to `<leader>R` by default, but you can change them to your liking.
+
+> ⚠️ **Attention:** It's critical to ensure `nvim-lspconfig` is configured to use the ESP-specific `clangd`. This is done automatically in the example below by setting `opts` for `nvim-lspconfig`. If you are using a different LSP setup, make sure to adjust accordingly.
+
 ```lua
 return {
   {
@@ -38,10 +42,12 @@ return {
       build_dir = "build.clang", -- default (can be customized)
     },
     keys = {
-      { "<leader>RM", function() require("esp32").create_picker("monitor") end, desc = "ESP32: Pick & Monitor" },
-      { "<leader>Rm", function() require("esp32").open_terminal("monitor") end, desc = "ESP32: Monitor" },
-      { "<leader>RF", function() require("esp32").create_picker("flash") end, desc = "ESP32: Pick & Flash" },
-      { "<leader>Rf", function() require("esp32").open_terminal("flash") end, desc = "ESP32: Flash" },
+      { "<leader>RM", function() require("esp32").pick("monitor") end, desc = "ESP32: Pick & Monitor" },
+      { "<leader>Rm", function() require("esp32").command("monitor") end, desc = "ESP32: Monitor" },
+      { "<leader>RF", function() require("esp32").pick("flash") end, desc = "ESP32: Pick & Flash" },
+      { "<leader>Rf", function() require("esp32").command("flash") end, desc = "ESP32: Flash" },
+      { "<leader>Rc", function() require("esp32").command("menuconfig") end, desc = "ESP32: Configure" },
+      { "<leader>RC", function() require("esp32").command("clean") end, desc = "ESP32: Clean" },
       { "<leader>Rr", ":ESPReconfigure<CR>", desc = "ESP32: Reconfigure project" },
       { "<leader>Ri", ":ESPInfo<CR>", desc = "ESP32: Project Info" },
     },
@@ -77,10 +83,8 @@ opts = {
 | :---------------- | :-------------------------------------------------------------- |
 | `:ESPReconfigure` | Runs `idf.py -B build.clang -D IDF_TOOLCHAIN=clang reconfigure` |
 | `:ESPInfo`        | Shows ESP32 project setup info                                  |
-| `<leader>RM`      | Pick a serial port and monitor                                  |
-| `<leader>RF`      | Pick a serial port and flash                                    |
-| `<leader>Rm`      | Monitor directly without picking                                |
-| `<leader>Rf`      | Flash directly without picking                                  |
+| `pick`            | Pick a serial port and run a command on it.                     |
+| `command`         | Run a command (uses last port if needed)                        |
 
 ---
 

@@ -74,7 +74,7 @@ function M.ensure_clangd()
 end
 
 --- Open a Snacks terminal for idf.py command
-function M.open_terminal(cmd, port)
+function M.command(cmd, port)
 	local opts = M.options
 	local full_cmd = "idf.py -B " .. opts.build_dir
 	if port then
@@ -94,7 +94,7 @@ function M.open_terminal(cmd, port)
 end
 
 --- Create Snacks picker for port and run idf.py command
-function M.create_picker(cmd)
+function M.pick(cmd)
 	Snacks.picker.pick({
 		prompt = "Select ESP32 port",
 		ui_select = true,
@@ -120,7 +120,7 @@ function M.create_picker(cmd)
 		end,
 		confirm = function(picker, item)
 			picker:close()
-			M.open_terminal(cmd, item.port)
+			M.command(cmd, item.port)
 		end,
 	})
 end
