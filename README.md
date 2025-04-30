@@ -37,6 +37,20 @@ Install via Lazy.nvim or any other plugin manager. Via Lazy.nvim:
 }
 ```
 
+> ⚠️ **Attention:** It's critical to ensure `nvim-lspconfig` is configured to actually use the ESP-specific `clangd`. This is done in the example below by setting `opts` for `nvim-lspconfig`. _`esp32.nvim`_ provides a working LSP configuration via `lsp_config`, which can be used. If you are using a different LSP setup, make sure to adjust accordingly.
+
+```lua
+  {
+    "neovim/nvim-lspconfig",
+    opts = function(_, opts)
+      local esp32 = require("esp32")
+      opts.servers = opts.servers or {}
+      opts.servers.clangd = esp32.lsp_config()
+      return opts
+    end,
+  },
+```
+
 To customize, simply set the `opts` as usual:
 
 ```lua
@@ -67,15 +81,6 @@ return {
  name = "esp32.nvim",
  dependencies = {
   "folke/snacks.nvim",
-  {
-   "neovim/nvim-lspconfig",
-   opts = function(_, opts)
-    local esp32 = require("esp32")
-    opts.servers = opts.servers or {}
-    opts.servers.clangd = esp32.lsp_config()
-    return opts
-   end,
-  },
  },
  opts = {
   build_dir = "build.clang",
@@ -130,20 +135,6 @@ return {
   { "<leader>Ri", ":ESPInfo<CR>", desc = "ESP32: Project Info" },
  },
 }
-```
-
-> ⚠️ **Attention:** It's critical to ensure `nvim-lspconfig` is configured to use the ESP-specific `clangd`. This is done in the example below by setting `opts` for `nvim-lspconfig`. The default configuration already does this, but if you are using a different LSP setup, make sure to adjust accordingly.
-
-```lua
-  {
-    "neovim/nvim-lspconfig",
-    opts = function(_, opts)
-      local esp32 = require("esp32")
-      opts.servers = opts.servers or {}
-      opts.servers.clangd = esp32.lsp_config()
-      return opts
-    end,
-  },
 ```
 
 ---
