@@ -29,7 +29,15 @@ Uses [snacks.nvim](https://github.com/folke/snacks.nvim) for terminal and picker
 
 ## 📦 Installation (with Lazy.nvim)
 
-If you are using Lazy.nvim, add a `esp32.lua` file to your `~/.config/nvim/lua/plugins/` directory. Below is a sample configuration, you can customize it as needed. The mappings are set to `<leader>R` by default, but you can change them to your liking.
+Install via Lazy.nvim or any other plugin manager. Via Lazy.nvim, add the following to your `~/.config/nvim/lua/plugins/init.lua` file:
+
+```lua
+{
+  "Aietes/esp32.nvim",
+}
+```
+
+Below is the default configuration. If you are using Lazy.nvim, add a `esp32.lua` file to your `~/.config/nvim/lua/plugins/` directory. Below is a sample configuration, you can customize it as needed. The mappings are set to `<leader>R` by default, but you can change them to your liking.
 
 > ⚠️ **Attention:** It's critical to ensure `nvim-lspconfig` is configured to use the ESP-specific `clangd`. This is done automatically in the example below by setting `opts` for `nvim-lspconfig`. If you are using a different LSP setup, make sure to adjust accordingly.
 
