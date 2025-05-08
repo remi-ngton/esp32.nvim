@@ -11,6 +11,14 @@ return {
 		require("esp32").setup(opts)
 	end,
 	keys = {
+		{ "<leader>R", desc = "ESP32" },
+		{
+			"<leader>Rb",
+			function()
+				require("esp32").build()
+			end,
+			desc = "ESP32: Build",
+		},
 		{
 			"<leader>RM",
 			function()
