@@ -37,6 +37,17 @@ end
 
 --- Find the ESP-IDF specific clangd
 function M.find_esp_clangd()
+	-- if clangd is on the path, check if it is from espressif using.
+	-- if so, we are done
+	if vim.fn.executable("clangd") == 1 then
+		-- use `clangd --version` to check if it is from espressif
+		local clangd_version = vim.fn.system("clangd --version")
+		if clangd_version:match("espressif") then
+			-- return the absolute path to clangd
+			return vim.fn.exepath("clangd")
+		end
+	end
+
 	local home = vim.env.HOME or vim.fn.expand("~")
 	local base = home .. "/.espressif/tools/esp-clang"
 	local scandir = vim.uv.fs_scandir(base)
