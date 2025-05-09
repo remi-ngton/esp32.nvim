@@ -155,6 +155,7 @@ opts = {
 | :---------------- | :-------------------------------------------------------------- |
 | `:ESPReconfigure` | Runs `idf.py -B build.clang -D IDF_TOOLCHAIN=clang reconfigure` |
 | `:ESPInfo`        | Shows ESP32 project setup info                                  |
+| `:ESPBuild`       | Runs a build of the project                                     |
 | `pick`            | Pick a serial port and run a command on it.                     |
 | `command`         | Run a command (uses last port if needed)                        |
 
