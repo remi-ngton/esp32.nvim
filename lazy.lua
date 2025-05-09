@@ -7,6 +7,9 @@ return {
 	opts = {
 		build_dir = "build.clang",
 	},
+	cond = function()
+		return vim.fn.filereadable(vim.fn.expand("sdkconfig"))
+	end,
 	config = function(_, opts)
 		require("esp32").setup(opts)
 	end,
