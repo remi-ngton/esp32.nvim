@@ -104,6 +104,17 @@ function M.command(cmd, port)
 	})
 end
 
+--- Run idf.py build
+function M.build()
+	local build_dir = M.options.build_dir
+	M.command("build")
+end
+
+-- Setup build command for Neovim
+vim.api.nvim_create_user_command("ESPBuild", function()
+	M.build()
+end, {})
+
 --- Create Snacks picker for port and run idf.py command
 function M.pick(cmd)
 	Snacks.picker.pick({
