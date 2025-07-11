@@ -4,8 +4,8 @@ local Snacks = require("snacks")
 
 ---@class ESP32Opts
 local defaults = {
-	build_dir = "build.clang",
-	baudrate = 115200,
+	build_dir = "build",
+	baudrate = 921600,
 }
 
 M.options = vim.deepcopy(defaults)
@@ -26,7 +26,7 @@ function M.list_ports()
 			if not name then
 				break
 			end
-			if name:match("^cu%.") then
+			if name:match("^ttyUSB") then
 				table.insert(ports, { port = "/dev/" .. name })
 			end
 		end
@@ -150,7 +150,7 @@ end
 --- Run idf.py reconfigure for build.clang
 function M.reconfigure()
 	local build_dir = M.options.build_dir
-	Snacks.terminal.open("idf.py -B " .. build_dir .. " -D IDF_TOOLCHAIN=clang reconfigure", {
+	Snacks.terminal.open("idf.py -B " .. build_dir .. " reconfigure", {
 		win = {
 			width = 0.5,
 			height = 0.4,
